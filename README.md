@@ -9,7 +9,7 @@ This page is a stub!
 
 ### Getting started
 
-Prequisites
+### Prequisites
 
 * PostgreSQL 9.x
 * python3 including pyqt5, xlsxwriter, psycopg2, folium
