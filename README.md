@@ -63,4 +63,4 @@ This code is licensed to you under the terms of the [GNU AFFERO GENERAL PUBLIC L
 
 ## HTML Documentation
 
-https://github.com/janhoo/critter/critter-layout.html
+https://github.com/janhoo/critter/critterbase/critter-layout.html
