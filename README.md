@@ -5,15 +5,26 @@ benthic biodiversity datamodel plus toolbox
 
 This page is a stub!
 
-## Installation
+## Getting started
 
-1. install postgreSQL 9.x and set up the database
+### Getting started
+
+Prequisites
+
+* PostgreSQL 9.x
+* python3 including pyqt5, xlsxwriter, psycopg2, folium
+
+### Installation
+
+(steps 1+2 only if you want your own database)
+1. install postgreSQL 9.x
+2. then set up the database
 ```
 cat critterbase/db.ddl.sql | psql -d <YOURDATABASENAME> -U <YOURDBUSER> -h <YOURHOSTe.g.localhost> -p <PORTe.g.5432> -q
 ```
-or use our database at https://www.awi.de/ourservice .
+You can use our database at https://www.awi.de/ourservice .
 
-2. install python3 and the dependencies. If you are lucky, on osx and fine with homebrew,
+3. install python3 and the dependencies. If you are lucky, on osx and fine with homebrew,
 ```
 ./install_dependencies.sh
 ```
@@ -21,7 +32,11 @@ will do that for you.
 Otherwise install
 python3 and the packages: pyqt5 xlsxwriter psycopg2 folium
 
-3. use thicc to ingest and curate data. Fire it up with ./start.sh
+4. use thicc to ingest and curate data. Fire it up with
+
+```
+./start.sh
+```
 
 
 
@@ -38,7 +53,12 @@ python3 and the packages: pyqt5 xlsxwriter psycopg2 folium
 * send a pull request on: https://github.com/janhoo/benthos/
 * compose a friendly e-mail to:janmholstein[at]gmail(dot)com
 
+## Authors
 
-### License
+* Jan Holstein & Paul Kloss - Initial work
+
+## License
 
 This code is licensed to you under the terms of the [GNU AFFERO GENERAL PUBLIC LICENSE](http://choosealicense.com/licenses/agpl-3.0/) version 3.0 or higher.
+
+##
