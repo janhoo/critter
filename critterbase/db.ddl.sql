@@ -15,6 +15,44 @@ COMMENT ON COLUMN fiona.crs.name IS 'Human readable name for the CRS';
 
 COMMENT ON COLUMN fiona.crs.srid IS 'An integer value that uniquely identifies each Spatial Reference System within a database. Same as in Postgis''s spatial_ref_sys';
 
+CREATE TABLE fiona.dataset_1 ( 
+	id                   serial  NOT NULL,
+	name                 varchar(140)  NOT NULL,
+	created_by_person_id integer  NOT NULL,
+	lineage              varchar(140)  NOT NULL,
+	created_on           timestamp DEFAULT current_timestamp NOT NULL,
+	license_model        varchar(140) DEFAULT 'CC BY-NC-ND' NOT NULL,
+	quality_checked_yn   bool DEFAULT false NOT NULL,
+	free_access_yn       bool DEFAULT true NOT NULL,
+	uuid                 uuid DEFAULT uuid_generate_v1mc() NOT NULL,
+	doi                  varchar(140)  ,
+	description          varchar(140)  ,
+	CONSTRAINT pk_dataset PRIMARY KEY ( id ),
+	CONSTRAINT idx_dataset UNIQUE ( name ) 
+ );
+
+COMMENT ON TABLE fiona.dataset_1 IS 'Metadaten zu datensaetzen, qualitaetsmanagement, provienenz, etc';
+
+COMMENT ON COLUMN fiona.dataset_1.id IS 'Primaerschluessel';
+
+COMMENT ON COLUMN fiona.dataset_1.name IS 'Eindeutiger Bezeichner des Datensatzes';
+
+COMMENT ON COLUMN fiona.dataset_1.created_by_person_id IS 'Erzeuger des Datensatzes';
+
+COMMENT ON COLUMN fiona.dataset_1.lineage IS 'Provenienz';
+
+COMMENT ON COLUMN fiona.dataset_1.created_on IS 'FORMAT ''YYYY-MM-DD HH:MM:SS''';
+
+COMMENT ON COLUMN fiona.dataset_1.license_model IS 'CC BY-NC-ND';
+
+COMMENT ON COLUMN fiona.dataset_1.quality_checked_yn IS 'Qualitätskontrolle durchgeführt.
+
+FIXME noch zu definieren, worin Qualitätskontrolle besteht';
+
+COMMENT ON COLUMN fiona.dataset_1.uuid IS 'Universally Unique Identifier';
+
+COMMENT ON COLUMN fiona.dataset_1.doi IS 'Digital Object Identifier';
+
 CREATE TABLE fiona.gear ( 
 	id                   serial  NOT NULL,
 	name                 varchar(140)  NOT NULL,
@@ -30,16 +68,20 @@ CREATE TABLE fiona.gear (
 	CONSTRAINT idx_gear UNIQUE ( name ) 
  );
 
-ALTER TABLE fiona.gear ADD CONSTRAINT check_gear_typ CHECK ( (category='grab' or category='trawl') );
+ALTER TABLE fiona.gear ADD CONSTRAINT check_gear_typ CHECK ( (category='grab' or category='trawl' or category='video') );
 
-COMMENT ON CONSTRAINT check_gear_typ ON fiona.gear IS 'ONLA gear of type
+COMMENT ON CONSTRAINT check_gear_typ ON fiona.gear IS 'ONLY gear of type
 ''grab'' and ''trawl''
 are allowed';
 
-ALTER TABLE fiona.gear ADD CONSTRAINT check_grab_area_exists CHECK ( ((category='grab' and area is not null) or category='trawl') );
+ALTER TABLE fiona.gear ADD CONSTRAINT check_grab_area_exists CHECK ( category is not null );
 
-COMMENT ON CONSTRAINT check_grab_area_exists ON fiona.gear IS 'wenn category==''grab, dann
-muss ''area'' einen Wert haben (nicht NULL)';
+COMMENT ON CONSTRAINT check_grab_area_exists ON fiona.gear IS '# NOT IN USE
+wenn category==''grab, dann
+muss ''area'' einen Wert haben (nicht NULL)
+
+
+# ((category=''grab'' and area is not null) or category=''trawl'')';
 
 COMMENT ON TABLE fiona.gear IS 'Die gear-Tabelle enthält verschiedene Geräte zur Probenahme, sowie deren wichtigste Parameter. Individualisierung der Geräte ist via Attribut "gearname" möglich
 
@@ -89,8 +131,7 @@ REFERENCE BenDa::Xgear::Weight_kg';
 COMMENT ON COLUMN fiona.gear.meshsize IS 'Maschengröße des Netzes
 
 UNIT mm
-REFERENCE BenDa::Xgear::MeshSize_mm
-';
+REFERENCE BenDa::Xgear::MeshSize_mm';
 
 COMMENT ON COLUMN fiona.gear.description IS 'Beschreibung als Freitext
 
@@ -143,16 +184,12 @@ REFERENCE BenDa::Scientist';
 COMMENT ON COLUMN fiona.person.id IS 'Eindeutige Identifikationsnummer für die Person
 
 UNIT none
-REFERENCE none
-';
+REFERENCE none';
 
 COMMENT ON COLUMN fiona.person.name IS 'Eindeutiger Bezeichner / Kurzname
-[unique]
-';
+[unique]';
 
-COMMENT ON COLUMN fiona.person.vor_und_nachname IS 'Name im Format [Vorname Nachname]
-
-';
+COMMENT ON COLUMN fiona.person.vor_und_nachname IS 'Name im Format [Vorname Nachname]';
 
 COMMENT ON COLUMN fiona.person.affiliation IS 'Heimatinstitution
 
@@ -211,9 +248,7 @@ UNIT none
 REFERENCE none';
 
 COMMENT ON COLUMN fiona.ship.name IS 'Reasearch ship name 
-[unique]
-
-';
+[unique]';
 
 CREATE TABLE fiona.sieve ( 
 	id                   serial  NOT NULL,
@@ -351,8 +386,7 @@ COMMENT ON COLUMN fiona.taxon.vaid IS 'valid_aphiaid
 REFERENCE: valid_aphiaid Field from WORMS (marinspecies.org)';
 
 COMMENT ON COLUMN fiona.taxon.valid_name IS 'valid_name
-REFERENCE: valid_name Field from WORMS (marinspecies.org)
-';
+REFERENCE: valid_name Field from WORMS (marinspecies.org)';
 
 COMMENT ON COLUMN fiona.taxon.valid_authority IS 'valid_authority
 REFERENCE: valid_authority Field from WORMS (marinspecies.org)';
@@ -537,19 +571,19 @@ CREATE TABLE fiona.station (
 	ingest_id            integer  NOT NULL,
 	responsible_person_id integer  ,
 	status_id            integer  ,
-	start_lon            numeric(11,8)  ,
-	start_lat            numeric(11,8)  ,
+	start_lon            float8  ,
+	start_lat            float8  ,
 	start_on             date  ,
 	start_time           time  ,
 	start_depth          float8  ,
-	end_lon              numeric(11,8)  ,
-	end_lat              numeric(11,8)  ,
+	end_lon              float8  ,
+	end_lat              float8  ,
 	end_on               date  ,
 	end_time             time  ,
 	end_depth            float8  ,
 	"location"           varchar(140)  ,
-	target_lon           numeric(11,8)  ,
-	target_lat           numeric(11,8)  ,
+	target_lon           float8  ,
+	target_lat           float8  ,
 	replicates           integer  ,
 	temperature_air      float8  ,
 	temperature_surfacewater float8  ,
@@ -613,8 +647,7 @@ REFERENCE BenDa::Station::StartLat';
 COMMENT ON COLUMN fiona.station.start_on IS 'Dateof arrival at the station
 
 FORMAT ''YYYY-MM-DD''
-REFERENCE BenDa::Station::StartDate
-';
+REFERENCE BenDa::Station::StartDate';
 
 COMMENT ON COLUMN fiona.station.start_time IS 'Time of arrival at the station
 
@@ -641,8 +674,7 @@ REFERENCE BenDa::Station::EndLat';
 COMMENT ON COLUMN fiona.station.end_on IS 'Date of departure from station
 
 FORMAT ''YYYY-MM-DD''
-REFERENCE BenDa::Station::EndDate
-';
+REFERENCE BenDa::Station::EndDate';
 
 COMMENT ON COLUMN fiona.station.end_time IS 'Time of departure from the station
 
@@ -714,7 +746,7 @@ COMMENT ON COLUMN fiona.station.wind_direction IS 'Wind direction in text format
 
 UNIT NONE
 REFERENCE BenDa::Station::Winddirection
-FIXME allowed categories e.g. NW NNW WNW ';
+FIXME allowed categories e.g. NW NNW WNW';
 
 COMMENT ON COLUMN fiona.station.remark IS 'Remark
 
@@ -731,14 +763,14 @@ CREATE TABLE fiona.sample (
 	responsible_person_id integer  ,
 	scope_id             integer DEFAULT 0 NOT NULL,
 	area                 float8  ,
-	start_lon            numeric(11,8)  NOT NULL,
-	start_lat            numeric(11,8)  NOT NULL,
+	start_lon            float8  NOT NULL,
+	start_lat            float8  NOT NULL,
 	start_on             date  NOT NULL,
 	start_time           time  ,
 	start_on_error       integer DEFAULT 0 ,
 	start_depth          float8  ,
-	end_lon              numeric(11,8)  ,
-	end_lat              numeric(11,8)  ,
+	end_lon              float8  ,
+	end_lat              float8  ,
 	end_on               date  ,
 	end_time             time  ,
 	end_depth            float8  ,
@@ -807,8 +839,7 @@ REFERENCE BenDa::Sample::RespScientist';
 COMMENT ON COLUMN fiona.sample.scope_id IS 'identifies taxa that was looked for
 0 := no biological analysis was carried out
 
-REFERENCE none
-';
+REFERENCE none';
 
 COMMENT ON COLUMN fiona.sample.area IS 'Beprobte Flaeche
 
@@ -893,8 +924,7 @@ COMMENT ON COLUMN fiona.sample.subsample_share IS 'Factor for extrapolating subs
 ( = sample weight/subsample weight)
 
 UNIT kg/kg
-REFERENCE BenDa::Sample::TotalSubFactor
-';
+REFERENCE BenDa::Sample::TotalSubFactor';
 
 COMMENT ON COLUMN fiona.sample.sampling_distance IS 'Total trawling distance of sample, only relevant for trawled/towed gears (net towed).
 
@@ -912,20 +942,17 @@ FIXME thisis valid for all method_biomass_xxx, is it?';
 COMMENT ON COLUMN fiona.sample.method_biomass_dry IS 'Method to obtain Drymass
 
 REFERENCE BenDa::Sample::DrywDeterm
-FIXME  1 = measured, 2 = calculated by species conversion factor
-';
+FIXME  1 = measured, 2 = calculated by species conversion factor';
 
 COMMENT ON COLUMN fiona.sample.method_biomass_afdm IS 'Method to obtain ash free drymass
 
 REFERENCE BenDa::Sample::AFDWDeterm
-FIXME  1 = measured, 2 = calculated by species conversion factor
-';
+FIXME  1 = measured, 2 = calculated by species conversion factor';
 
 COMMENT ON COLUMN fiona.sample.method_conservation IS 'Conservation method for sample
 
 REFERENCE BenDa::Sample::Conservation
-FIXME Alk = 70%Alkohol, For = Formaldehyde, Frz = Frozen
-';
+FIXME Alk = 70%Alkohol, For = Formaldehyde, Frz = Frozen';
 
 COMMENT ON COLUMN fiona.sample.temperature_surfacewater_start IS 'Wassertemperatur an der Oberfläche bei Beginn der Probenahme
 
@@ -1011,7 +1038,7 @@ COMMENT ON COLUMN fiona.sediment.gsd IS 'Sorting coefficient sigma1 of sediment
 
 UNIT none
 BenDa::Sediment::GSD
-FIXME  calculated by percental parts of different grainsizes ';
+FIXME  calculated by percental parts of different grainsizes';
 
 COMMENT ON COLUMN fiona.sediment.weight IS 'Total weight of sediment sample used for grainsize determination
 
@@ -1183,8 +1210,8 @@ CREATE TABLE fiona.population (
 	given_aphiaid        integer  NOT NULL,
 	given_taxon_name     varchar(140)  NOT NULL,
 	given_gear_name      varchar(140)  NOT NULL,
-	given_lon            numeric  NOT NULL,
-	given_lat            numeric  NOT NULL,
+	given_lon            float8  NOT NULL,
+	given_lat            float8  NOT NULL,
 	given_date           date  NOT NULL,
 	CONSTRAINT populationid PRIMARY KEY ( id )
  );
