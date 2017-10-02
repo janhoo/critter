@@ -57,9 +57,6 @@ python3 and the packages: pyqt5 xlsxwriter psycopg2 folium
 
 * Jan Holstein & Paul Kloss - Initial work
 
-## License
-
-This code is licensed to you under the terms of the [GNU AFFERO GENERAL PUBLIC LICENSE](http://choosealicense.com/licenses/agpl-3.0/) version 3.0 or higher.
 
 ## HTML Documentation
 
