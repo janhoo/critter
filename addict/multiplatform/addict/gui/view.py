@@ -6,7 +6,7 @@ try:
     from PyQt5.QtGui import *
     from PyQt5.QtWidgets import *
     from helper.printtools import SmartPrint
-    from logik.workflows import Workflows
+    from logik.workflow import Workflow
 except ImportError as ex:
     print("Folgendes Modul fehlt: " + ex.name + "\nBitte installieren.")
     quit()
@@ -37,17 +37,32 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         self.__model = model
         self.__smartprint = SmartPrint(model = model)
 
+        # Spezielle Gui Elemente als Objektvariablen merken
+        self.toolButtonLookupMenu = None # ToolbarButton Lookup merken
+
         # Initialisierung
         self.setupUi(self)
             # Window Icon
         self.setWindowIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/crabby.png"))
         self.guiRefeshWindowTitelDryRun()
+            # Namen aller Workflows
+        odicWf = self.__model.workflow.getWfNamenDictCopy()
             # Actions
-        self.actionArktis.triggered.connect(self.actionArktisClicked)
-        self.actionTemplateArktis.triggered.connect(self.actionTemplateArktisClicked)
+                # Ingest
+        for k,v in odicWf.items():
+            action = QAction("Ingest "+v, self)
+            action.triggered.connect(partial(self.actionIngest, k))
+            self.menu_ingest.addAction(action)
+                # Template
+        for k,v in odicWf.items():
+            action = QAction("Template "+v, self)
+            action.triggered.connect(partial(self.actionTemplate, k))
+            self.menu_template.addAction(action)
+                # Rest
         self.actionOptionen.triggered.connect(self.actionOptionenClicked)
         self.actionInfo.triggered.connect(self.actionInfoClicked)
         self.actionBeenden.triggered.connect(self.actionBeendenClicked)
+        self.actionKonsistenzcheckAutopsy.triggered.connect(self.actionCheckKonsitstenzAutopsy)
             # ToolBar-Buttons
         buttonSize = QSize(48,48)
                 # Ingest
@@ -56,9 +71,10 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         toolButtonIngest.setIconSize(buttonSize)
         toolButtonIngest.setToolTip("Ingest CSV-Dateien")
         toolButtonIngestMenu = QMenu()
-        toolButtonIngestMenu.addAction(self.actionArktis) # Arktis
-        toolButtonIngestMenu.addAction(self.actionAntarktis)  # Antarktis
-        toolButtonIngestMenu.addAction(self.actionNordsee) # Nordsee
+        for k,v in odicWf.items():
+            action = QAction("Ingest "+v, self)
+            action.triggered.connect(partial(self.actionIngest, k))
+            toolButtonIngestMenu.addAction(action)
         toolButtonIngest.setMenu(toolButtonIngestMenu)
         toolButtonIngest.setPopupMode(QToolButton.InstantPopup)
         self.toolBar.addWidget(toolButtonIngest)
@@ -68,12 +84,23 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         toolButtonTempl.setIconSize(buttonSize)
         toolButtonTempl.setToolTip("Excel-Template exportieren")
         toolButtonTemplMenu = QMenu()
-        toolButtonTemplMenu.addAction(self.actionTemplateArktis) # Arktis
-        toolButtonTemplMenu.addAction(self.actionTemplateAntarktis)  # Antarktis
-        toolButtonTemplMenu.addAction(self.actionTemplateNordsee)  # Nordsee
+        for k,v in odicWf.items():
+            action = QAction("Template "+v, self)
+            action.triggered.connect(partial(self.actionTemplate, k))
+            toolButtonTemplMenu.addAction(action)
         toolButtonTempl.setMenu(toolButtonTemplMenu)
         toolButtonTempl.setPopupMode(QToolButton.InstantPopup)
         self.toolBar.addWidget(toolButtonTempl)
+            # Neuer Datensatz in Lookuptable
+        toolButtonLookup = QToolButton()
+        toolButtonLookup.setIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/icon_lookup.png"))
+        toolButtonLookup.setIconSize(buttonSize)
+        toolButtonLookup.setToolTip("Neuer Eintrag in Lookup-Table")
+        toolButtonLookupMenu = QMenu()
+        toolButtonLookup.setMenu(toolButtonLookupMenu)
+        toolButtonLookup.setPopupMode(QToolButton.InstantPopup)
+        self.toolButtonLookupMenu = toolButtonLookupMenu # ToolButton Merken fuer die Menueinträge
+        self.toolBar.addWidget(toolButtonLookup)
                 # Optionen
         toolButtonOpt = QToolButton()
         toolButtonOpt.setIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/icon_settings.png"))
@@ -116,10 +143,10 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             # Zusatz Tabellen
         self.__lstMenuNeuDatensatzZusatz = []
             # Zu entfernende Tabellen
-        self.__lstMenuNeuDatensatzBlacklist = ["station","population","cruise","sample"]
+        self.__lstMenuNeuDatensatzBlacklist = [] # ["station","population","cruise","sample"]
 
         # Aufbauen
-        self.buildGuiMenuNeuDatensatz()
+        self.buildGuiMenuNeuerDatensatzLookup()
 
         # Groesse auf Minimum
         self.resize(self.minimumSizeHint().width(), self.sizeHint().height())
@@ -151,7 +178,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         self.widgetProgress.show()
         bOk = False
         try:
-            bOk = self.__model.workflows.initialisierung()
+            bOk = self.__model.workflow.initialisierung()
         except:
             pass
         self.widgetProgress.hide()
@@ -169,6 +196,29 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pn("Serververbindung getrennt")
         self.guiRefreshAll()
 
+    # Popup: Text
+    def popupText(self, sTitel, sText):
+        # Dialog erzeugen
+        dia = QDialog()
+        dia.setWindowTitle(sTitel)
+        dia.setWindowModality(Qt.ApplicationModal)
+        vbox = QVBoxLayout(dia)
+        #vbox.setContentsMargins(4, 4, 4, 4)
+        vbox.setSpacing(1)
+        sText = sText.replace("\n","<br>")
+        text = QTextEdit(sText)
+        font = QFont("monospace")
+        font.setPixelSize(10)
+        text.setFont(font)
+        text.setLineWrapMode(QTextEdit.NoWrap)
+        vbox.addWidget(text)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonBox.accepted.connect(dia.accept)
+        vbox.addWidget(buttonBox)
+        dia.resize(800, 600)
+        self.centerWidget(dia)
+        dia.exec()
+
     # Popup: Info
     def popupInfo(self, sTitel, sText, sDetail=None):
         self.__popupGeneric(titel=" ", text=sTitel, textExtra=sText, textDetail=sDetail)
@@ -176,6 +226,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
     # Popup: Fehler
     def popupFehler(self, sTitel, sText, sDetail=None):
         self.__popupGeneric(titel=" ", text=sTitel, textExtra=sText, textDetail=sDetail, icon="error")
+
 
     # Popup Generic
     def __popupGeneric(self, **kwargs):
@@ -261,7 +312,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pv = self.__smartprint.verbose
 
         pv("* Teste Verbindung zum Server")
-        bOk = self.__model.workflows.isReady()
+        bOk = self.__model.workflow.isReady()
         if bOk is None:
             # Serververbindung ist noch nie hergestellt worden
             bOk = self.serverConnect()
@@ -279,14 +330,14 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
 
     # --- GUI-Aktionen ---
 
-    # Ingest Arktis
-    def actionArktisClicked(self):
-        if not self.__model.workflows.isReady():
+    # Ingest
+    def actionIngest(self, sWfKuerzel):
+        if not self.__model.workflow.isReady():
             #self.popupInfo("Noche keine Serververbindung","Bitte erst mit dem Datenbankserver verbinden.")
             return
         csvFile = QFileDialog.getOpenFileName(self, "CSV-Datei", filter="*.csv;; *.*")[0]  # Hole CSV-Datei
         if csvFile != "":
-            bOk, odicCounter, iIngestId, lstWarn, sFehler = self.__model.workflows.ingestArktis(csvFile)  # Starte Workflow
+            bOk, odicCounter, iIngestId, lstWarn, sFehler = self.__model.workflow.ingestData(csvFile, sWfKuerzel)  # Starte Workflow
             if bOk == False:
                 # Fehler
                 self.popupFehler("Ingestion wurde abgebrochen", "Näheres siehe Konsolenausgabe ...", sFehler)
@@ -295,7 +346,8 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 sInfo = "<b>Erzeugte Datensätze in Datenbank</b>"
                 sInfo += "<ul>"
                 for k, v in odicCounter.items():
-                    sInfo += "<li><i>"+ k + "</i> (" + str(v) + "x)</li>"
+                    if v > 0:
+                        sInfo += "<li><i>"+ k + "</i> (" + str(v) + "x)</li>"
                 sInfo += "</ul>"
                 if lstWarn != []:
                     sInfo += "<b>Es sind Warnungen aufgetreten</b>"
@@ -309,13 +361,17 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 self.guiRefeshIngestionTabelle()
                 self.popupInfo("Ingestion ist abgeschlossen", sInfo, sWarn)
 
-    # Template Arktis
-    def actionTemplateArktisClicked(self):
-        if not self.__model.workflows.isReady():
+    # Template
+    def actionTemplate(self, sWfKuerzel):
+        if not self.__model.workflow.isReady():
             return
-        excelFile = QFileDialog.getSaveFileName(self, "Speichere Excel-Datei", "template_arktis.xlsx")[0]
+
+        # Bestimme Workflownamen
+        sWfName = self.__model.workflow.getWfNameZuKuerzel(sWfKuerzel) # Hole Namen zu Wf-Kuerzel
+
+        excelFile = QFileDialog.getSaveFileName(self, "Speichere Excel-Datei", "template_"+sWfName.lower()+".xlsx")[0]
         if excelFile != "":
-            bOk = self.__model.workflows.templateArktis(excelFile)
+            bOk = self.__model.workflow.exportTemplate(excelFile, sWfKuerzel)
             if bOk == False:
                 self.popupFehler("Fehler", "Es gab Probleme beim Erzeugen des Templates.\nNäheres siehe Konsolenausgabe ...")
 
@@ -412,8 +468,9 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                     pn("Passwort wird nicht mitgespeichert")
                     self.__model.cfgSave(savePw=False)
 
-            # Dry-Run im Titel einstellen (stumpf immer)
+            # System-Optionen aktualisieren (stumpf immer)
             self.guiRefeshWindowTitelDryRun()
+            self.guiRefreshSystem()
 
             # Workflows neu starten
             if bWfRestart == True:
@@ -433,12 +490,12 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
 
     # Neuen Datensatz erzeugen
     def actionNeuerDatensatz(self, sTab):
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
             self.inputGeneric("Neuer Datensatz in Tabelle: " + sTab.replace("_", " ").title(), sTab)
 
     # Verbindung zum Server herstellen/unterbrechen
     def actionVerbindungToggleClicked(self):
-        if self.__model.workflows.isReady() is not None:
+        if self.__model.workflow.isReady() is not None:
             self.serverDisconnect()
         else:
             self.serverConnect()
@@ -447,7 +504,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
     def actionButtonSqlCmd(self):
         pn = self.__smartprint.normal
 
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
             sSqlCmd = str(self.lineSqlCmd.currentText())
 
             # Whitespace entfernen
@@ -508,15 +565,75 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 return False
         return True
 
+    # Konsistenzcheck
+    def __dbKonsistenzcheck(self,sTitel,sSqlCmd):
+        pn = self.__smartprint.normal
+        if self.__model.workflow.isReady():
+            try:
+                # DB-Verbindung
+                conn = psycopg2.connect(self.__model.db.getConnStr())
+                cursor = conn.cursor()
+
+                # Popup Warten an
+                self.popupWaitingOn("Hole Antwort aus Datenbank ...")
+
+                # SQL
+                cursor.execute(sSqlCmd)
+                lstHeader = [head[0] for head in cursor.description]
+                lstContent = cursor.fetchall()
+
+                # Popup Warten aus
+                self.popupWaitingOff()
+
+                # Ergenis anzeigen
+                self.__showGenericTable(sTitel, lstHeader, lstContent, save=False)
+
+                # Rollback
+                conn.rollback()
+
+                # DB-Verbindung schliessen
+                cursor.close()
+                conn.close()
+                return True
+
+            except Exception as ex:
+
+                # Popup Warten aus
+                self.popupWaitingOff()
+                # Popup Fehler
+                sFehler = "Fehler ("+sTitel+"): " + str(ex)
+                pn(sFehler)
+                self.popupFehler("Fehler: "+sTitel,"Das SQL-Kommando hat eine Fehlermeldung beim Datenbankserver erzeugt.", str(ex))
+                return False
+        return True
+
+    # Konsistenzcheck Autopsy
+    def actionCheckKonsitstenzAutopsy(self):
+        # Testbefehl
+        sSqlCmd = \
+        '''
+        select distinct
+            auto.ingest_id as "Ingest ID",
+            --case when pop.id = auto.population_id then 'ok' else 'err' end as "ID Link: Autopsy->Population",
+            case when pop.sample_id = auto.sample_id  then 'ok' else 'err' end as "ID Link: (Autopsy,Population)->Sample",
+            case when auto.org_population_name_opt = pop.org_name_opt then 'ok' else 'err' end as "CSV Link: Autopsy->Population"
+        from 
+            '''+self.__model.db.getDbSchema()+'''.autopsy as auto
+        join 
+            '''+self.__model.db.getDbSchema()+'''.population as pop
+        on
+            auto.population_id = pop.id
+        where
+            auto.ingest_id = pop.ingest_id
+        order by
+            auto.ingest_id;
+        '''
+        # Check
+        self.__dbKonsistenzcheck("DB-Konsistenzcheck Autopsy", sSqlCmd)
+
     # Ende
     def actionBeendenClicked(self):
         self.close()
-        # mb = QMessageBox.warning(
-        #     self,"Programm Beenden?",
-        #     "Programm wirklich beenden?",
-        #     QMessageBox.Yes | QMessageBox.No)
-        # if mb == QMessageBox.Yes:
-        #     self.close()
 
     # --- GUI ---
 
@@ -527,36 +644,47 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             QApplication.processEvents()
 
     # Baue Menueeintraege: Neue Datensaetze erzeugen
-    def buildGuiMenuNeuDatensatz(self):
+    def buildGuiMenuNeuerDatensatzLookup(self):
 
-        lstTables = self.__model.workflows.getAllUsedTableNames()
+        lstTables = self.__model.workflow.getAllUsedTableNames()
+        lstTableUse = []
+
+        # Alle Tabellen entfernen, die keine Lookup-Tables sind und auf Blacklist sind
+        for sTab in lstTables:
+            if self.__model.workflow.isTabLookup(sTab) and sTab not in self.__lstMenuNeuDatensatzBlacklist:
+                lstTableUse.append(sTab)
 
         # Zusaetzliche Tabellen hinzufuegen
         for sTab in self.__lstMenuNeuDatensatzZusatz:
             if sTab not in lstTables:
-                lstTables.append(sTab)
-
-        # Auf Blacklist befindliche Tabellen entfernen
-        for sTab in self.__lstMenuNeuDatensatzBlacklist:
-            if sTab in lstTables:
-                lstTables.remove(sTab)
+                lstTableUse.append(sTab)
 
         # Erzeuge alle Menu-Einträge
-        for sTabName in lstTables:
+        for sTabName in lstTableUse:
             action = QAction(sTabName.replace("_", " ").title(), self)
             #self.connect(action, SIGNAL('triggered()'), partial(self.actionNeuerDatensatz, sTabName))
             action.triggered.connect(partial(self.actionNeuerDatensatz, sTabName))
             self.menuNeuerDatensatz.addAction(action)
+            self.toolButtonLookupMenu.addAction(action)
 
     # Baue DB-Status-Box auf
     def buildGuiDbTableStatusBox(self):
-        grid = QGridLayout()
-        grid.setSpacing(2)
-        grid.setContentsMargins(0,0,0,0)
-        iColMax = 4  # Anzahl der 4-Tuple-Widgets in einer Zeile
-        iCol = iRow = 1
 
-        lstTables = self.__model.workflows.getAllUsedTableNames()
+        # Grids (LookUp/Ingest)
+        gridLookup = QGridLayout()
+        gridLookup.setSpacing(2)
+        gridLookup.setContentsMargins(0,0,0,0)
+        gridIngest = QGridLayout()
+        gridIngest.setSpacing(2)
+        gridIngest.setContentsMargins(0, 0, 0, 0)
+
+        # Zähler für Widgets (Lookup/Ingest)
+        iColMaxLookup = 2  # Anzahl der 4-Tuple-Widgets in einer Zeile
+        iColLookup = iRowLookup = 1
+        iColMaxIngest = 2  # Anzahl der 4-Tuple-Widgets in einer Zeile
+        iColIngest = iRowIngest = 1
+
+        lstTables = self.__model.workflow.getAllUsedTableNames()
 
         # Zusaetzliche Tabellen hinzufuegen
         for sTab in self.__lstTableStatusZusatz:
@@ -572,7 +700,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             # Label
             label = QLabel(sTabName.replace("_", " ").title())
             font = label.font()
-            font.setPointSize(7)
+            font.setPointSize(9)
             label.setFont(font)
             # Button
             btnOpen = QToolButton()
@@ -606,16 +734,30 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             #ausgabeFeld.setFrame(False)
             ausgabeFeld.setReadOnly(True)
             self.__dicDbTableStatusBoxWidgets[sTabName] = ausgabeFeld  # Widgets in Dictionary merken
+
             # Zusammenbauen
-            grid.addWidget(label, iRow, iCol)
-            grid.addWidget(btnOpen, iRow, iCol + 1)
-            grid.addWidget(btnCsv, iRow, iCol + 2)
-            grid.addWidget(ausgabeFeld, iRow, iCol + 3)
-            iCol = iCol + 4
-            if iCol >= (iColMax * 4):
-                iRow += 1
-                iCol = 1
-        self.groupboxDBStatus.setLayout(grid)
+            if self.__model.workflow.isTabLookup(sTabName):
+                gridLookup.addWidget(label, iRowLookup, iColLookup)
+                gridLookup.addWidget(btnOpen, iRowLookup, iColLookup + 1)
+                gridLookup.addWidget(btnCsv, iRowLookup, iColLookup + 2)
+                gridLookup.addWidget(ausgabeFeld, iRowLookup, iColLookup + 3)
+                iColLookup = iColLookup + 4
+                if iColLookup >= (iColMaxLookup * 4):
+                    iRowLookup += 1
+                    iColLookup = 1
+            else:
+                gridIngest.addWidget(label, iRowIngest, iColIngest)
+                gridIngest.addWidget(btnOpen, iRowIngest, iColIngest + 1)
+                gridIngest.addWidget(btnCsv, iRowIngest, iColIngest + 2)
+                gridIngest.addWidget(ausgabeFeld, iRowIngest, iColIngest + 3)
+                iColIngest = iColIngest + 4
+                if iColIngest >= (iColMaxIngest * 4):
+                    iRowIngest += 1
+                    iColIngest = 1
+
+        # Baue Grids zusammen (Lookup/Ingest)
+        self.groupboxDBStatusLookup.setLayout(gridLookup)
+        self.groupboxDBStatusIngest.setLayout(gridIngest)
 
     # Generische Eingabe (wird abhängig von Tabellennamen spezialisiert -> weniger Code)
     def inputGeneric(self, sTitel, sTabelle, lstAttributAusschluss = ["id"]):
@@ -667,19 +809,6 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                     pv("+" + sTabelle + "(" + str(iId) + ")")
                     pd("SQL: "+sSqlQuery+" -> "+str(iId))
 
-                    # ---------------------------------------------------------------
-                    # TWEAK/SPEZIALISIERUNG (Zusaetzliche DB-Aktion)
-                    # ---------------------------------------------------------------
-
-                    # if sTabelle == "taxon":
-                    #     # Taxon
-                    #         # AcceptedId auf TaxonID setzen
-                    #     sSqlCmd = "UPDATE " + self.__model.db.getDbSchema() + ".taxon SET accepted_id = %s WHERE id = %s;"
-                    #     cursor.execute(sSqlCmd, (str(iId), str(iId)))
-                    #     sSqlQuery = cursor.query.decode("utf-8")
-                    #     pd(sSqlQuery)
-                    # ----------------------------------------------------------------
-
                 except Exception as ex:
                     bFehler = True
                     sFehler += "Fehler (" + sTitel + "): Beim Zugriff auf die Datenbank (Erzeuge Eintrag): " + str(ex)
@@ -692,7 +821,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             # ---------------------------------------------------------------
             sCsvFilename = QFileDialog.getOpenFileName(self, "CSV-Datei", filter="*.csv;; *.*")[0]
             if sCsvFilename != "":
-                bOk, iCounter, sErr = self.__model.workflows.ingestLookup(cursor, sTabelle, sCsvFilename)
+                bOk, iCounter, sErr = self.__model.workflow.ingestLookup(cursor, sTabelle, sCsvFilename)
                 bFehler |= not bOk
                 sFehler += sErr
 
@@ -764,7 +893,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                     # Dataset
                         # Name -Auflösen via Lookup-Table-> contact_person_id
                     if sTabelle == "dataset" and sName == "contact_person_id":
-                        dicPerson = self.__model.workflows.getLookupTableCopy("cruise_leader")
+                        dicPerson = self.__model.workflow.getLookupTableCopy("cruise_leader")
                         person = feld.currentText()
                         if person in dicPerson:
                             dicVal[sName] = dicPerson[person]
@@ -784,6 +913,8 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
 
     # Generische Eingabe: Erzeuge Dialog
     def __inputGenericCreateDialog(self, sTitel, lstAttr, sTabelle=None, dicAttrObligat={}, dicAttrComments={}, **kwargs):
+
+        pn = self.__smartprint.normal
 
         # Kwargs
         dicDefaultData = None
@@ -839,7 +970,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                     # category -> Combobox
                 if sTabelle == "gear" and sName == "category":
                     combo = QComboBox()
-                    combo.addItems(["grab","trawl"])
+                    combo.addItems(["grab","trawl","video"])
                         # Defaultwert
                     if dicDefaultData != None and sName in dicDefaultData:
                         sWert = str(dicDefaultData[sName]).lower()
@@ -847,6 +978,8 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                             combo.setCurrentIndex(0)
                         elif sWert == "trawl":
                             combo.setCurrentIndex(1)
+                        elif sWert == "video":
+                            combo.setCurrentIndex(2)
                     eingabeFeld = combo
 
                 # Dataset
@@ -865,15 +998,18 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                     # Person -> Lookuptable -> Combobox
                 if sTabelle == "dataset" and sName == "contact_person_id":
                     combo = QComboBox()
-                    dicPerson2id = self.__model.workflows.getLookupTableCopy("cruise_leader")
+                    dicPerson2id = self.__model.workflow.getLookupTableCopy("cruise_leader")
                     lstPerson = list(dicPerson2id)
                     combo.addItems(lstPerson)
                         # Defaultwert
                     if dicDefaultData != None and sName in dicDefaultData:
-                        dicId2person = dict((v, k) for k, v in dicPerson2id.items())
-                        iId = dicDefaultData[sName]
-                        sPerson = dicId2person[iId]
-                        combo.setCurrentIndex(combo.findData(sPerson, Qt.DisplayRole))
+                        try:
+                            dicId2person = dict((v, k) for k, v in dicPerson2id.items())
+                            iId = dicDefaultData[sName]
+                            sPerson = dicId2person[str(iId)]
+                            combo.setCurrentIndex(combo.findData(sPerson, Qt.DisplayRole))
+                        except:
+                            pn("Fehler bei Dialogaufbau: Vorgabewert für Feld contact_person_id konnte nicht ermittelt werden")
                     eingabeFeld = combo
 
             # ---------------------------------------------------------------
@@ -918,14 +1054,15 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         self.guiRefreshStatusTabellen()
         self.guiRefeshWindowTitelDryRun()
         self.guiRefeshIngestionTabelle()
+        self.guiRefreshSystem()
 
     # Refresh Status (Connection)
     def guiRefreshStatusConnection(self):
         # Textfelder
         self.infoTextDbConnect.setPalette(QPalette()) # Standardfarbe Text (deaktiviert)
-        if self.__model.workflows.isReady() is None:
+        if self.__model.workflow.isReady() is None:
             self.infoTextDbConnect.setText("nicht verbunden")
-        elif self.__model.workflows.isReady() == True:
+        elif self.__model.workflow.isReady() == True:
             self.infoTextDbConnect.setText("verbunden")
         else:
             palette = QPalette()
@@ -936,11 +1073,11 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         self.infoTextDbHost.setText(self.__model.db.sDbHost + ":" + self.__model.db.sDbPort)
         self.infoTextDbUser.setText(self.__model.db.sDbUser)
         # Icon Verbindung
-        if self.__model.workflows.isReady() is None:
+        if self.__model.workflow.isReady() is None:
             # Offline
             #self.buttonConnectionToggle.setIcon(self.style().standardIcon(getattr(QStyle, "SP_DialogNoButton")))
             self.buttonConnectionToggle.setIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/icon_offline.png"))
-        elif self.__model.workflows.isReady() == True:
+        elif self.__model.workflow.isReady() == True:
             # Online
             #self.buttonConnectionToggle.setIcon(self.style().standardIcon(getattr(QStyle, "SP_DialogYesButton")))
             self.buttonConnectionToggle.setIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/icon_online.png"))
@@ -948,11 +1085,29 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             # Error
             #self.buttonConnectionToggle.setIcon(self.style().standardIcon(getattr(QStyle, "SP_BrowserStop")))
             self.buttonConnectionToggle.setIcon(QIcon(os.path.dirname(os.path.realpath(__file__)) + "/ressource/icon_error.png"))
+
+    # Refresh Status (System)
+    def guiRefreshSystem(self):
+        # Textfelder
+            # Datensicht
+        self.infoTextSysDatensicht.setPalette(QPalette()) # Standardfarbe Text (deaktiviert)
+        if self.__model.bDataViewOutHuman:
+            self.infoTextSysDatensicht.setText("mensch")
+        else:
+            self.infoTextSysDatensicht.setText("technik")
+            # Dry
+        self.infoTextSysDry.setPalette(QPalette()) # Standardfarbe Text (deaktiviert)
+        if self.__model.bDry:
+            self.infoTextSysDry.setText("aktiv")
+        else:
+            self.infoTextSysDry.setText("aus")
+
+
     # Refresh Tabellen-Inhalte
     def guiRefreshStatusTabellen(self):
         pd = self.__smartprint.debug
         pn = self.__smartprint.normal
-        if self.__model.workflows.isReady() is not None:
+        if self.__model.workflow.isReady() is not None:
             try:
                 sModulname = "View: Refresh DB-Tabellen-Status"
                 pd("* "+sModulname)
@@ -993,7 +1148,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pn = self.__smartprint.normal
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady() is not None:
+        if self.__model.workflow.isReady() is not None:
 
             # Ja -> Ingestion-Tabelle aufbauen
             try:
@@ -1004,7 +1159,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 conn = psycopg2.connect(self.__model.db.getConnStr())
                 cursor = conn.cursor()
                 # Ingests holen
-                sSqlCmd = "SELECT * from " + self.__model.db.getDbSchema() + ".ingest;"
+                sSqlCmd = "SELECT id,name,created_on, workflow, description from " + self.__model.db.getDbSchema() + ".ingest;"
                 cursor.execute(sSqlCmd)
                 lstIngest = cursor.fetchall()
                 # DB-Verbindung schliessen
@@ -1028,8 +1183,12 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 iIngestId = None
                 for i, col in enumerate(row):
                     if i == 0:
+                        # Ingest-Id
                         iIngestId = col
                     if i == 3:
+                        # Data-Type (Workflow-Ausschnit)
+                        col = self.__model.workflow.getWfNameZuKuerzel(col)
+                    if i == 4:
                         # Description-Feld um Buttons erweitern
                         btnWidget = QWidget()
                         hbox = QHBoxLayout()
@@ -1059,6 +1218,14 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                         btnPlot.setFont(font)
                         btnPlot.setToolTip("Sample-Koordinaten des Ingest auf Karte anzeigen")
                         btnPlot.setToolButtonStyle(Qt.ToolButtonTextOnly)
+                        # Log
+                        btnLog = QToolButton()
+                        btnLog.setText("log")
+                        font = btnLog.font()
+                        font.setPointSize(7)
+                        btnLog.setFont(font)
+                        btnLog.setToolTip("Informationen zum Ingestprozess anzeigen")
+                        btnLog.setToolButtonStyle(Qt.ToolButtonTextOnly)
                         # Del
                         btnDel = QToolButton()
                         btnDel.setText("del")
@@ -1071,7 +1238,9 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                         btnSave.clicked.connect(partial(self.ingestSave, iIngestId))
                         btnShow.clicked.connect(partial(self.ingestShow, iIngestId))
                         btnPlot.clicked.connect(partial(self.ingestPlot, iIngestId))
+                        btnLog.clicked.connect(partial(self.ingestLog, iIngestId))
                         btnDel.clicked.connect(partial(self.ingestDel, iIngestId))
+
                         # Zusammenbauen
                         label = QLabel(str(col))
                         font = label.font()
@@ -1081,6 +1250,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                         hbox.addWidget(btnShow)
                         hbox.addWidget(btnPlot)
                         hbox.addWidget(btnSave)
+                        hbox.addWidget(btnLog)
                         hbox.addWidget(btnDel)
                         btnWidget.setLayout(hbox)
                         self.tableIngest.setCellWidget(rowPosition, i, btnWidget)
@@ -1426,11 +1596,11 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pd = self.__smartprint.debug
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             # Ja -> Lookup-Tabelle anzeigen
             try:
-                sModulname = "Zeige Lookuptable"
+                sModulname = "Zeige Tabelle"
                 pv("* " + sModulname)
                 pv("Tabelle: " + sTab)
                 pv("Hole Tabelle aus DB ...")
@@ -1450,7 +1620,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
 
                 # Verändere Ergebnis (Ids -Lookup-> Namen)
                 if self.__model.bDataViewOutHuman:
-                    lstHeader, lstContent = self.__model.workflows.tweakTableDataForHumanOutput(sTab, lstHeader, lstContent)
+                    lstHeader, lstContent = self.__model.workflow.tweakTableDataForHumanOutput(sTab, lstHeader, lstContent)
 
                 # DB-Verbindung schliessen
                 cursor.close()
@@ -1458,7 +1628,8 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 pd("ok")
 
                 # Ergenis anzeigen
-                self.__showGenericTable("Tabelle: " + sTab.replace("_", " ").title(), lstHeader, lstContent, edit=True, editTab=sTab, rangeIdx=0)
+                bEdit = self.__model.workflow.isTabLookup(sTab)
+                self.__showGenericTable("Tabelle: " + sTab.replace("_", " ").title(), lstHeader, lstContent, edit=bEdit, editTab=sTab, rangeIdx=0)
 
             except Exception as ex:
                 self.guiClearStatusTabellen()  # Felder loeschen
@@ -1470,8 +1641,14 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pv = self.__smartprint.verbose
         pd = self.__smartprint.debug
 
+        # Info: Technische Sicht aktiviert
+        if not self.__model.bDataViewOutHuman:
+            self.popupInfo("Technische Sichtweise aktiv",
+                           "IDs aus Lookup-Tables werden nicht in Bezeichner umgesetzt. "
+                           "Die gespeicherten Daten können so evtl. nicht wieder \"ingestiert\" werden.")
+
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             # Ja -> Tabelle speichern aufbauen
             try:
@@ -1497,7 +1674,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 if self.__model.bDataViewOutHuman:
 
                     # Verändere Ergebnis (Ids -Lookup-> Namen)
-                    lstHeader, lstContent = self.__model.workflows.tweakTableDataForHumanOutput(sTab, lstHeader, lstContent)
+                    lstHeader, lstContent = self.__model.workflow.tweakTableDataForHumanOutput(sTab, lstHeader, lstContent)
 
                     # Entferne gesamte Spalte "id" (Header und Inhalt)
                         # Inhalt
@@ -1582,7 +1759,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 closeWin = kwargs['closeWin']
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             bOk = False
 
@@ -1678,7 +1855,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 closeWin = kwargs['closeWin']
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             bOk = False
 
@@ -1752,14 +1929,29 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pv = self.__smartprint.verbose
         pd = self.__smartprint.debug
 
-        # Verbunden mit Server?
-        if self.__model.workflows.isReady():
 
-            # Ja -> Ingestion-Tabelle aufbauen
+        # Info: Technische Sicht aktiviert
+        if not self.__model.bDataViewOutHuman:
+            self.popupInfo("Technische Sichtweise aktiv",
+                       "IDs aus Lookup-Tables werden nicht in Bezeichner umgesetzt. "
+                       "Die gespeicherten Daten können so nicht wieder \"ingestiert\" werden.")
+        # Verbunden mit Server?
+        if self.__model.workflow.isReady():
+
             try:
                 sModulname = "Speichern Ingest in CSV-Datei"
                 pv("* " + sModulname)
                 pv("IngestID: " + str(iIngestId))
+
+                # Hole Wf-Kuerzel
+                sWfKuerzel = self.__model.workflow.getWfKuerzelZuIngestAusDb(iIngestId)
+                if sWfKuerzel is None:
+                    pn("* Fehler (" + sModulname + "): Es gab ein Fehler beim bestimmen des Datentyps")
+                    return
+                sWfName = self.__model.workflow.getWfNameZuKuerzel(sWfKuerzel)
+
+                pv("Daten: " + sWfName)
+
                 pv("Lade Ingestdaten aus DB")
 
                 # DB-Verbindung
@@ -1770,11 +1962,11 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
                 self.popupWaitingOn("Lade Ingest aus Datenbank ...")
 
                 # Hole Ergebnis aus DB
-                lstHeader, lstContent = self.__model.workflows.getIngestArktis(iIngestId)
+                lstHeader, lstContent = self.__model.workflow.getIngestFromDb(iIngestId, sWfKuerzel)
 
                 # Tweake die Ergebnis-Tabelle (ID-Lookup-Tables->Namen)
                 if self.__model.bDataViewOutHuman:
-                    lstHeader, lstContent = self.__model.workflows.tweakIngestDataForHumanOutput(lstHeader, lstContent)
+                    lstHeader, lstContent = self.__model.workflow.tweakIngestDataForHumanOutput(lstHeader, lstContent)
 
                 # Busy aus
                 self.popupWaitingOff()
@@ -1802,29 +1994,39 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pd = self.__smartprint.debug
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
+
 
             sModulname = "Zeige Ingest"
             pv("* " + sModulname)
             pv("IngestID: "+str(iIngestId))
+
+            # Hole Wf-Kuerzel
+            sWfKuerzel = self.__model.workflow.getWfKuerzelZuIngestAusDb(iIngestId)
+            if sWfKuerzel is None:
+                pn("* Fehler ("+sModulname+"): Es gab ein Fehler beim bestimmen des Datentyps")
+                return
+            sWfName = self.__model.workflow.getWfNameZuKuerzel(sWfKuerzel)
+            pv("Daten: "+sWfName)
+
             pv("Hole Daten fuer Ingest aus DB ...")
 
             # Popup Warten as
             self.popupWaitingOn("Lade Ingest aus Datenbank ...")
 
             # Hole Ergebnis aus DB
-            lstHeader, lstContent = self.__model.workflows.getIngestArktis(iIngestId)
+            lstHeader, lstContent = self.__model.workflow.getIngestFromDb(iIngestId,sWfKuerzel)
 
             # Popup Warten aus
             self.popupWaitingOff()
 
             # Tweake die Ergebnis-Tabelle (ID-Lookup-Tables->Namen)
             if self.__model.bDataViewOutHuman:
-                lstHeader, lstContent = self.__model.workflows.tweakIngestDataForHumanOutput(lstHeader, lstContent)
+                lstHeader, lstContent = self.__model.workflow.tweakIngestDataForHumanOutput(lstHeader, lstContent)
 
             # Ergebnis anzeigen
             if lstHeader is not None and lstContent is not None:
-                self.__showGenericTable("Ingestion (ID:" + str(iIngestId) + ")", lstHeader, lstContent)
+                self.__showGenericTable("Ingestion: ID=" + str(iIngestId) + ", Daten="+sWfName, lstHeader, lstContent)
             else:
                 self.guiClearStatusTabellen()  # Felder loeschen
 
@@ -1837,7 +2039,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
         pnProgress = self.__smartprint.progress
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             sMap = os.path.expanduser("~") + "/map_ingest_"+str(iIngestId)+".html"
 
@@ -1851,7 +2053,7 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             # Popup Warten as
             self.popupWaitingOn("Lade Samplekoordinaten des Ingest aus Datenbank ...")
 
-            lstHeader, lstContent = self.__model.workflows.getIngestArktisSampleLocations(iIngestId)
+            lstHeader, lstContent = self.__model.workflow.getIngestSampleLocationsFromDb(iIngestId)
             pv("Anzahl Marker: "+str(len(lstContent)))
 
             # Popup Warten as
@@ -1863,15 +2065,18 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
 
             # Samples
             for iRow, item in enumerate(lstContent):
-                fLon = float(item[1])
-                fLat = float(item[0])
+                # Eselsbrücke: Genau umgekehrt zum Naheliegenden (Mittelmeer-Ursprung)
+                # Lat (Höhe,y) 0...+/-90
+                # Lon (Breite,x) 0...+/-180
+                fLon = float(item[0])
+                fLat = float(item[1])
                 sCruise = item[2]
                 sSample = item[3]
                 sStation = item[4]
                 sDataset = item[5]
-                sPopup = "<b>Dataset</b>: "+str(sDataset)+"<br><b>Cruise</b>: "+str(sCruise)+"<br><b>Station</b>: "+str(sStation)+"<br><b>Sample</b>: "+str(sSample)+"<br><b>Lat/Long</b>: ("+str(fLat)+"/"+str(fLon)+")"
+                sPopup = "<b>Dataset</b>: "+str(sDataset)+"<br><b>Cruise</b>: "+str(sCruise)+"<br><b>Station</b>: "+str(sStation)+"<br><b>Sample</b>: "+str(sSample)+"<br><b>Lon/Lat</b>: ("+str(fLon)+"/"+str(fLat)+")"
                 htmlPopup = folium.Popup(folium.Html(sPopup,script=True))
-
+                # todo: Hier ist alles richtig angegeben -> trotzdem stimmt was nicht
                 folium.CircleMarker(location=[fLat,fLon], radius=5, popup=htmlPopup, fill_color="red", color="grey").add_to(map);
                 # Fortschritt
                 pnProgress(iRow, len(lstContent), 50, guiText="Baue Karte auf\nBearbeite Marker ", abs=True,cli=False)  # Fortschritt
@@ -1884,23 +2089,81 @@ class View(QMainWindow, uic.loadUiType(fileHauptfenster)[0]):
             webbrowser.open("file://"+sMap, new=1)
             self.popupWaitingOff()
 
+    # Log zu Ingestion anzeigen
+    def ingestLog(self, iIngestId):
+        pn = self.__smartprint.normal
+        pv = self.__smartprint.verbose
+        pd = self.__smartprint.debug
 
-        # Ingestions löschen
+
+        # Verbunden mit Server?
+        if self.__model.workflow.isReady():
+
+            sModulname = "Hole Beschreibung zu Ingest"
+            pv("* " + sModulname)
+            pv("IngestID: " + str(iIngestId))
+
+            # Popup Warten an
+            self.popupWaitingOn("Hole Log zu Ingest aus Datenbank ...")
+
+            try:
+                # DB-Verbindung
+                conn = psycopg2.connect(self.__model.db.getConnStr())
+                cursor = conn.cursor()
+
+                # SQL-Command
+                sSqlCmd = "select log from "+self.__model.db.getDbSchema()+".ingest where id = %s;"
+                cursor.execute(sSqlCmd, [str(iIngestId)])
+                sSqlQuery = cursor.query.decode("utf-8")
+                pd("SQL: " + sSqlQuery)
+
+                # Ergebnis
+                lstContent = cursor.fetchall()
+                sContent = lstContent[0][0]
+
+                # Popup Warten aus
+                self.popupWaitingOff()
+
+                # Dialog anzeigen
+                self.popupText("Log zu Ingest Nr. "+str(iIngestId),sContent)
+
+                # DB-Verbindung schliessen
+                cursor.close()
+                conn.close()
+                pd("ok")
+
+            except Exception as ex:
+                # Debug
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                iZeileCode = exc_tb.tb_lineno  # Falls ein Fehler entsteht -> Zeile
+                pn(str(iZeileCode))
+                pn("Fehler (Hole Beschreibung zu Ingest): Bei Zugriff auf die Datenbank: " + str(ex))
+
+                # Popup Warten aus
+                self.popupWaitingOff()
+
+    # Ingestions löschen
     def ingestDel(self, iIngestId):
         pn = self.__smartprint.normal
         pv = self.__smartprint.verbose
         pd = self.__smartprint.debug
 
         # Verbunden mit Server?
-        if self.__model.workflows.isReady():
+        if self.__model.workflow.isReady():
 
             # Wirklich?
             mb = QMessageBox.warning(self," ","<h3>Ingestion löschen</h3>Soll die Ingestion mit der ID "+str(iIngestId)+" wirklich gelöscht werden?",QMessageBox.Yes | QMessageBox.No)
             if mb == QMessageBox.No:
                 return True
 
+            # Popup Warten an
+            self.popupWaitingOn("Lösche Ingest in Datenbank ...")
+
             # Loeschen
-            odicErg, sFehler = self.__model.workflows.delIngestArktis(iIngestId)
+            odicErg, sFehler = self.__model.workflow.delIngestInDb(iIngestId)
+
+            # Popup Warten aus
+            self.popupWaitingOff()
 
             # Fehler
             if odicErg is None:

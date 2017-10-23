@@ -3,7 +3,7 @@ try:
     from os.path import expanduser
     from helper.printtools import SmartPrint
     from helper.dbtools import DbTools
-    from logik.workflows import Workflows
+    from logik.workflow import Workflow
 except ImportError as ex:
     print("Folgendes Modul fehlt: " + ex.name + "\nBitte installieren.")
     quit()
@@ -37,7 +37,7 @@ class Model:
         self.prnt = SmartPrint(model = self)
             # Infos zum Programm
         self.sInfoPrgName = "addict"
-        self.sInfoPrgVersion = "v.3.0.1~"
+        self.sInfoPrgVersion = "v.3.0.2~"
         self.sInfoDbSchemaVersion = "fiona"
         self.sInfoDatum = u"Copyright \N{COPYRIGHT SIGN} 2017"
         self.sInfoKommentar = "<i>Another Diversity Data Ingest and Curation Tool</i><br><br>" \
@@ -56,15 +56,15 @@ class Model:
         self.sConfigFilename = os.path.expanduser("~") + "/addict.conf"
         self.cfgRead()
             # Workflows
-        self.workflows = Workflows(self)
-        if not self.workflows.bOkWorkflowModell:
+        self.workflow = Workflow(self)
+        if not self.workflow.bOkWorkflowModell:
             quit()
 
     # -----------------------
 
     # Workflow neu erstellen
     def newWorkflow(self):
-        self.workflows = Workflows(self)
+        self.workflow = Workflow(self)
 
     # Observer der View anmelden
     def addObserver(self, observer):

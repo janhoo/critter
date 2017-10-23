@@ -2,34 +2,40 @@
 # coding=utf-8
 
 '''
-INFO:
-- Code-Verschlankung: Einfache Getter/Setter weggelassen -> Ersatz durch direkten Public-Memberzugriff 
-- PW-Verschüsselung fuer Configfile: Nur Verschleierung (base64)
-- SmartPrinter: Nicht threadsafe (Shared Ressource: Console, Txt-Widget, Log-File)
+TODOS
 
-GIT-HELFER:
-alias git_add_all_edited_files='git status; git ls-files --modified | xargs git add; git status'
-alias git_add_tag='echo "--- Aktuelle Tags ---";git tag; echo "--- Beschreibung des neuen Tag ---"; echo -n "Tag-Name: "; read NAME; echo -n "Tag-Info: "; read INFO; git tag -a "$NAME" -m "$INFO";  echo "--- Kontaktiere Git-Server ---"; git push origin $NAME; echo "--- Zusammenfassung ---"; git show $NAME; echo "--- Fertig ---";'
-alias git_push_all_edited_files='echo "--- Alter Status ---";git status; git ls-files --modified | xargs git add; echo "--- Neuer Status ---"; git status; echo "--- Beschreibung zum Commit eingeben ---"; read INFO;  if test -z "$INFO"; then INFO="edit"; fi; git commit -m "$INFO"; cat version.txt; echo "--- Push ---"; git push; echo "--- Schreibe neue Version in Datei version.txt ---"; version=$(git describe --long); echo ${version%-*} | tee version.txt; echo "--- Fertig ---";'
+*** WF-Tweak für Nordseedaten
 
-TODO:
-- DB
-  - cruise.crs_id: hat keine Hilfe
-  - ingest.description: textlänge vergrößern
-- Code
-  - Check Case-Sensitivity bei Trigger/Lookup-Vergleichen
-  - Problem: Es kann pro Zeile nur z.B. eine Cruise erzeugt werden
-    - Lösung: Check: Pro Zeile (nach aktiviertem n-ten Trigger müssen max-n-Trigger aktiviert werden)
-- Algorithmus
-  - Optionaler "Strict-Mode"
-    bei dem jeder Eintrag in der CSV exakt so wie die vorherige sein muss oder fehlen darf (nicht nur Triggerfeld prüfen)
-    macht aber nur Sinn um Warnungen auszugeben
+* Veränderungen an Datenmodell
+- sediment
+  - not nullable: description (obligates Triggerfeld, damit kein Datensatz verlorengeht)
+- population
+  - neu: org_name_opt
+- autopsy
+  - neu, not nullable: org_population_name_opt (obligates Triggerfeld, damit kein Datensatz verlorengeht)
+  - neu: not nullabel: sample_id (fk sample.id)
+
+* Veränderung an Nordseedaten, um eine stattgefundene Ingestierung abzubilden
+  - in sediment:
+    wo description und remark == null -> update "Keine Beschreibung"
+  - in autopsy:
+    wo autopsys.population_id == population.id -> setzte autopsy.org_population_name_opt = autopsy.population_id
+    wo autopsys.population_id == population.id -> setze autopsy.sample_id = entsprechendes population.sample_id
+  - in population:
+    wenn irgendwo in autopsy autopsys.population_id == population.id -> setze entprechend population.org_name_opt = population.id
+
+* Verändereungen am R-Skript zum Erzeugen der CSV-Nordseedaten
+- ingest.csv: workflow und log (via R-Skript) hinzufuegen
+  - So soll das CSV nachher aussehen:
+    "id","name","created_on","description","workflow","log"
+    1,"anonymous","2017-08-25 14:32:40","prime dataset","n","---"
+
 '''
 
 try:
     import argparse, sys, os, textwrap, getpass, configparser
     from PyQt5.QtWidgets import *
-    from logik.workflows import Workflows
+    from logik.workflow import Workflow
     from gui.controller import Controller
     from gui.model import Model
     from helper.printtools import SmartPrint
@@ -57,12 +63,10 @@ if __name__ == "__main__":
     gruppeWF = parser.add_argument_group("Workflows fuer die Ingestion")
     gruppeWF.add_argument("-nds", metavar="<datei.csv>", help="Nordseedaten in DB einpflegen", type=str, nargs=1)
     gruppeWF.add_argument("-ark", metavar="<datei.csv>", help="Arktisdaten in DB einpflegen", type=str, nargs=1)
-    gruppeWF.add_argument("-aak", metavar="<datei.csv>", help="Antarktisdaten in DB einpflegen", type=str, nargs=1)
 
     gruppeTempl = parser.add_argument_group("Excel-Templates fuer die Ingestion")
     gruppeTempl.add_argument("-tnds", metavar="<datei.xlsx>", help="Template fuer Nordseedaten erzeugen", type=str, nargs='?', const="template_nordsee.xlsx")
     gruppeTempl.add_argument("-tark", metavar="<datei.xlsx>", help="Template fuer Arktisdaten erzeugen", type=str, nargs='?', const="template_arktis.xlsx")
-    gruppeTempl.add_argument("-taak", metavar="<datei.xlsx>", help="Template fuer Antarktisdaten erzeugen", type=str,nargs='?', const="template_arktis.xlsx")
 
     gruppeDB = parser.add_argument_group("Datenbank")
     gruppeDB.add_argument("-db", help="Datenbankverbindung anzeigen/konfigurieren", action="store_true")
@@ -173,7 +177,7 @@ if __name__ == "__main__":
     # Initialisiere Workflows (Serververbindung und Passwort)
     if m.db.sDbPw == "":
         m.db.sDbPw = getpass.getpass(prompt="Passwort: ") # Pw holen
-    bOK = m.workflows.initialisierung()
+    bOK = m.workflow.initialisierung()
     if bOK == False:
         quit()
 
@@ -181,17 +185,18 @@ if __name__ == "__main__":
     if args.i:
         print("* Informationen")
         m.info()
-        m.workflows.info()
+        m.workflow.info()
 
     # Werte CLI-Parameter aus (Serververbindung noetig)
     elif args.tnds != None:
         # Template Nordseedaten
-        print("Kommt noch...")
-        quit()
-    elif args.taak != None:
-        # Template Antarktisdaten
-        print("Kommt noch...")
-        quit()
+        if os.path.isfile(args.tnds):
+            print("Datei '" + args.tnds + "' existiert bereits.")
+            ein = input("Soll die Datei ueberschrieben werden [jN]? ")
+            if ein == "" or ein.lower()[0] not in ('y','j'):
+                print("Abbruch...")
+                quit()
+        m.workflow.exportTemplate(args.tnds, "n")
     elif args.tark != None:
         # Template Arktisdaten
         if os.path.isfile(args.tark):
@@ -200,21 +205,21 @@ if __name__ == "__main__":
             if ein == "" or ein.lower()[0] not in ('y','j'):
                 print("Abbruch...")
                 quit()
-        m.workflows.templateArktis(args.tark)
+        m.workflow.exportTemplate(args.tark,"a")
     elif args.nds != None:
-        print("Kommt noch...")
-        quit()
-    elif args.aak != None:
-        print("Kommt noch...")
-        quit()
+        # Workflow Nordsee
+        if not os.path.isfile(args.nds[0]):
+            print("Eingabedatei '"+args.nds[0]+"' existiert nicht... Abbruch")
+            quit()
+        m.workflow.ingestData(args.nds[0],"n")
     elif args.ark != None:
         # Workflow Arktis
         if not os.path.isfile(args.ark[0]):
             print("Eingabedatei '"+args.ark[0]+"' existiert nicht... Abbruch")
             quit()
-        m.workflows.ingestArktis(args.ark[0])
+        m.workflow.ingestData(args.ark[0],"a")
     elif args.test:
-        m.workflows.test()
+        m.workflow.test()
     else:
         # Nichts ausgewaehlt
         print("Nichts zu tun...")

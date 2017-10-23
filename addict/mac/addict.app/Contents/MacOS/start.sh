@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Standardkodierung definieren (wichtig für das Lesen von Dateien)
+export LANG=de_DE.UTF-8
+
 # Definitionen
 PY_MODULE="folium xlsxwriter psycopg2 PyQt5"
 
