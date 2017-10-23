@@ -32,7 +32,7 @@ will do that for you.
 Otherwise install
 python3 and the packages: pyqt5 xlsxwriter psycopg2 folium
 
-4. use thicc to ingest and curate data. Fire it up with
+4. use **ingest** to ingest and curate data. Fire it up with
 
 ```
 ./start.sh
