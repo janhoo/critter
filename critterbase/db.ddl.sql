@@ -56,7 +56,7 @@ COMMENT ON COLUMN fiona.dataset_1.doi IS 'Digital Object Identifier';
 CREATE TABLE fiona.gear ( 
 	id                   serial  NOT NULL,
 	name                 varchar(140)  NOT NULL,
-	type                 varchar(140)  ,
+	"type"               varchar(140)  ,
 	category             varchar(140)  NOT NULL,
 	width                float8  ,
 	height               float8  ,
@@ -98,7 +98,7 @@ COMMENT ON COLUMN fiona.gear.name IS 'Bezeichner des Geraets zB Dredge2.0m
 
 REFERENCE BenDa::Sample::GearID';
 
-COMMENT ON COLUMN fiona.gear.type IS 'Gerätetyp zB VV
+COMMENT ON COLUMN fiona.gear."type" IS 'Gerätetyp zB VV
 
 REFERENCE BenDa::Xgear::InstrType
 FIXME BC, VV, BT, DRE, ...';
@@ -230,14 +230,14 @@ COMMENT ON COLUMN fiona.positioningsystem.name IS 'Positionierungssystem des Sch
 [unique]
 REFERENCE BenDa::Cruise::Positionsystem';
 
-CREATE TABLE fiona.scope ( 
+CREATE TABLE fiona."scope" ( 
 	id                   serial  NOT NULL,
 	name                 varchar(140)  ,
 	description          varchar(140)  ,
 	CONSTRAINT pk_scope PRIMARY KEY ( id )
  );
 
-COMMENT ON TABLE fiona.scope IS 'beschreibt eine Gruppe von Taxa die potentiell findbar waren. Dient zur Bestimmung von Absence Daten. 0 := sample wurde nicht auf taxa untersucht
+COMMENT ON TABLE fiona."scope" IS 'beschreibt eine Gruppe von Taxa die potentiell findbar waren. Dient zur Bestimmung von Absence Daten. 0 := sample wurde nicht auf taxa untersucht
 
 FIXME Constraint/Trigger if exists fk_population_sample_id then sample.scope_id != 0';
 
@@ -265,7 +265,7 @@ COMMENT ON COLUMN fiona.ship.name IS 'Reasearch ship name
 
 CREATE TABLE fiona.sieve ( 
 	id                   serial  NOT NULL,
-	size                 float8  NOT NULL,
+	"size"               float8  NOT NULL,
 	description          varchar(140)  NOT NULL,
 	CONSTRAINT sievefracid PRIMARY KEY ( id )
  );
@@ -279,7 +279,7 @@ COMMENT ON COLUMN fiona.sieve.id IS 'Unique identifier of the sieve fraction
 UNIT NONE
 REFERENCE NONE';
 
-COMMENT ON COLUMN fiona.sieve.size IS 'Mesh size
+COMMENT ON COLUMN fiona.sieve."size" IS 'Mesh size
 
 UNIT mm
 REFERENCE BenDa::xsieveFrac::SieveFraction';
@@ -594,7 +594,7 @@ CREATE TABLE fiona.station (
 	end_on               date  ,
 	end_time             time  ,
 	end_depth            float8  ,
-	location             varchar(140)  ,
+	"location"           varchar(140)  ,
 	target_lon           float8  ,
 	target_lat           float8  ,
 	replicates           integer  ,
@@ -700,7 +700,7 @@ UNIT m unter Bezugsfläche (>0)
 REFERENCE BenDa::Station::DepthEnd
 TO DO - Benda issue ticket 9';
 
-COMMENT ON COLUMN fiona.station.location IS 'Name der Station, wenn diese ausserhable der ''cruise'' existiert (zB Dauerstationen / alternative Namenschemata).
+COMMENT ON COLUMN fiona.station."location" IS 'Name der Station, wenn diese ausserhable der ''cruise'' existiert (zB Dauerstationen / alternative Namenschemata).
 
 REFERENCE BenDa::Station::Area';
 
@@ -1215,7 +1215,7 @@ CREATE TABLE fiona.population (
 	sieve_id             integer  ,
 	lifestage_id         integer  ,
 	ingest_id            integer  NOT NULL,
-	number               numeric  ,
+	"number"             numeric  ,
 	biomass_wet          float8  ,
 	biomass_dry          float8  ,
 	biomass_afdm         float8  ,
@@ -1269,7 +1269,7 @@ COMMENT ON COLUMN fiona.population.lifestage_id IS 'life_stage::stageid: Develop
 UNIT NONE
 REFERENCE BenDa::Bcatch::Stage';
 
-COMMENT ON COLUMN fiona.population.number IS 'Anzahl der Individuen pro sample.sampled_area
+COMMENT ON COLUMN fiona.population."number" IS 'Anzahl der Individuen pro sample.sampled_area
 (Beachten: Abhängig von gear.gearcategory, sample.sampled_area ist unterschiedlich definiert. )
 
 UNIT NONE
@@ -1490,7 +1490,7 @@ ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_4 FOREIGN KEY ( dataset_id ) R
 
 COMMENT ON CONSTRAINT fk_sample_4 ON fiona.sample IS '';
 
-ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_5 FOREIGN KEY ( scope_id ) REFERENCES fiona.scope( id );
+ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_5 FOREIGN KEY ( scope_id ) REFERENCES fiona."scope"( id );
 
 COMMENT ON CONSTRAINT fk_sample_5 ON fiona.sample IS '';
 
