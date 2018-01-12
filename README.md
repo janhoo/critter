@@ -1,8 +1,11 @@
 # critter
-benthic biodiversity datamodel plus toolbox
 
-[![DOI](https://zenodo.org/badge/98420240.svg)](https://zenodo.org/badge/latestdoi/98420240)
+#### Overview
+Critter is a warehousing data solution for benthic biodiversity data to
+Based on a elaborated, but still simple enough data model, it is geared towards
 
+
+It consists of three modules. Centerpiece is the [data model](https://janhoo.github.io/critter/) and the database. The ingest tool helps you
 This page is a stub!
 
 ## Getting started
