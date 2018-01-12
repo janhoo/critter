@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "*** Installation der Abhaengigkeiten fuer addict"
+echo "*** Installation der Abhaengigkeiten fuer ingest"
 echo "* Installiere Paketmanager Hombrew"
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 echo "* Installiere Python3 (via Hombrew)"
