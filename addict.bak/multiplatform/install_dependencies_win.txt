@@ -1,0 +1,10 @@
+* Download/Installation (direkt): 
+- Python3.x: https://www.python.org/download
+
+* Download/Installation via Python-Paketmanager pip (pip installs packages):
+
+- Starte Admin-Konsole: Rechte Maustaste auf Windows-Starter -> Eingabeaufforderung "Administrator"
+
+- Wechsel in Python-Pip-Ordner: cd C:/Programme/Python3x/Skripts
+
+- Installation: pip install pyqt5 xlsxwriter psycopg2 folium

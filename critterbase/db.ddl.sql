@@ -1,4 +1,9 @@
 CREATE SCHEMA fiona;
+COMMENT ON SCHEMA fiona IS 'Benthosdatenmodel Version ''fiona''.
+@Author: Jan M Holstein 
+@Date: "Nov 14 2017"
+@Email: janmholstein@gmail.com
+Copyright 2016 by Jan M Holstein, All rights reserved';
 
 CREATE TABLE fiona.crs ( 
 	id                   serial  NOT NULL,
@@ -136,6 +141,17 @@ REFERENCE BenDa::Xgear::MeshSize_mm';
 COMMENT ON COLUMN fiona.gear.description IS 'Beschreibung als Freitext
 
 REFERENCE BenDa::Xgear::GearDescription';
+
+COMMENT ON CONSTRAINT check_gear_typ ON fiona.gear IS 'ONLY gear of type
+''grab'' and ''trawl''
+are allowed';
+
+COMMENT ON CONSTRAINT check_grab_area_exists ON fiona.gear IS '# NOT IN USE
+wenn category==''grab, dann
+muss ''area'' einen Wert haben (nicht NULL)
+
+
+# ((category=''grab'' and area is not null) or category=''trawl'')';
 
 CREATE TABLE fiona.ingest ( 
 	id                   serial  NOT NULL,
@@ -1416,113 +1432,57 @@ REFERENCE BenDa::Bmess::Remark';
 
 ALTER TABLE fiona.autopsy ADD CONSTRAINT fk_autopsy FOREIGN KEY ( population_id ) REFERENCES fiona.population( id );
 
-COMMENT ON CONSTRAINT fk_autopsy ON fiona.autopsy IS '';
-
 ALTER TABLE fiona.autopsy ADD CONSTRAINT fk_autopsy_0 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_autopsy_0 ON fiona.autopsy IS '';
 
 ALTER TABLE fiona.cruise ADD CONSTRAINT fk_cruise FOREIGN KEY ( positioningsystem_id ) REFERENCES fiona.positioningsystem( id );
 
-COMMENT ON CONSTRAINT fk_cruise ON fiona.cruise IS '';
-
 ALTER TABLE fiona.cruise ADD CONSTRAINT fk_cruise_1 FOREIGN KEY ( ship_id ) REFERENCES fiona.ship( id );
-
-COMMENT ON CONSTRAINT fk_cruise_1 ON fiona.cruise IS '';
 
 ALTER TABLE fiona.cruise ADD CONSTRAINT fk_cruise_2 FOREIGN KEY ( lead_person_id ) REFERENCES fiona.person( id );
 
-COMMENT ON CONSTRAINT fk_cruise_2 ON fiona.cruise IS '';
-
 ALTER TABLE fiona.cruise ADD CONSTRAINT fk_cruise_0 FOREIGN KEY ( crs_id ) REFERENCES fiona.crs( id );
-
-COMMENT ON CONSTRAINT fk_cruise_0 ON fiona.cruise IS '';
 
 ALTER TABLE fiona.cruise ADD CONSTRAINT fk_cruise_3 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
 
-COMMENT ON CONSTRAINT fk_cruise_3 ON fiona.cruise IS '';
-
 ALTER TABLE fiona.dataset ADD CONSTRAINT fk_dataset FOREIGN KEY ( contact_person_id ) REFERENCES fiona.person( id );
-
-COMMENT ON CONSTRAINT fk_dataset ON fiona.dataset IS '';
 
 ALTER TABLE fiona.population ADD CONSTRAINT fk_population_0 FOREIGN KEY ( sample_id ) REFERENCES fiona.sample( id );
 
-COMMENT ON CONSTRAINT fk_population_0 ON fiona.population IS '';
-
 ALTER TABLE fiona.population ADD CONSTRAINT fk_population_1 FOREIGN KEY ( sieve_id ) REFERENCES fiona.sieve( id );
-
-COMMENT ON CONSTRAINT fk_population_1 ON fiona.population IS '';
 
 ALTER TABLE fiona.population ADD CONSTRAINT fk_population_2 FOREIGN KEY ( lifestage_id ) REFERENCES fiona.lifestage( id );
 
-COMMENT ON CONSTRAINT fk_population_2 ON fiona.population IS '';
-
 ALTER TABLE fiona.population ADD CONSTRAINT fk_population_3 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_population_3 ON fiona.population IS '';
 
 ALTER TABLE fiona.population ADD CONSTRAINT fk_population FOREIGN KEY ( taxon_id ) REFERENCES fiona.taxon( id );
 
-COMMENT ON CONSTRAINT fk_population ON fiona.population IS '';
-
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample FOREIGN KEY ( station_id ) REFERENCES fiona.station( id );
-
-COMMENT ON CONSTRAINT fk_sample ON fiona.sample IS '';
 
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_1 FOREIGN KEY ( responsible_person_id ) REFERENCES fiona.person( id );
 
-COMMENT ON CONSTRAINT fk_sample_1 ON fiona.sample IS '';
-
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_2 FOREIGN KEY ( gear_id ) REFERENCES fiona.gear( id );
-
-COMMENT ON CONSTRAINT fk_sample_2 ON fiona.sample IS '';
 
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_3 FOREIGN KEY ( status_id ) REFERENCES fiona.status( id );
 
-COMMENT ON CONSTRAINT fk_sample_3 ON fiona.sample IS '';
-
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_0 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_sample_0 ON fiona.sample IS '';
 
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_4 FOREIGN KEY ( dataset_id ) REFERENCES fiona.dataset( id );
 
-COMMENT ON CONSTRAINT fk_sample_4 ON fiona.sample IS '';
-
 ALTER TABLE fiona.sample ADD CONSTRAINT fk_sample_5 FOREIGN KEY ( scope_id ) REFERENCES fiona."scope"( id );
-
-COMMENT ON CONSTRAINT fk_sample_5 ON fiona.sample IS '';
 
 ALTER TABLE fiona.sediment ADD CONSTRAINT fk_sediment FOREIGN KEY ( sample_id ) REFERENCES fiona.sample( id );
 
-COMMENT ON CONSTRAINT fk_sediment ON fiona.sediment IS '';
-
 ALTER TABLE fiona.sediment ADD CONSTRAINT fk_sediment_0 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_sediment_0 ON fiona.sediment IS '';
 
 ALTER TABLE fiona.sieveanalysis ADD CONSTRAINT fk_sieveanalysis FOREIGN KEY ( sample_id ) REFERENCES fiona.sample( id );
 
-COMMENT ON CONSTRAINT fk_sieveanalysis ON fiona.sieveanalysis IS '';
-
 ALTER TABLE fiona.sieveanalysis ADD CONSTRAINT fk_sieveanalysis_0 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_sieveanalysis_0 ON fiona.sieveanalysis IS '';
 
 ALTER TABLE fiona.station ADD CONSTRAINT fk_station_0 FOREIGN KEY ( status_id ) REFERENCES fiona.status( id );
 
-COMMENT ON CONSTRAINT fk_station_0 ON fiona.station IS '';
-
 ALTER TABLE fiona.station ADD CONSTRAINT fk_station_1 FOREIGN KEY ( responsible_person_id ) REFERENCES fiona.person( id );
-
-COMMENT ON CONSTRAINT fk_station_1 ON fiona.station IS '';
 
 ALTER TABLE fiona.station ADD CONSTRAINT fk_station FOREIGN KEY ( cruise_id ) REFERENCES fiona.cruise( id );
 
-COMMENT ON CONSTRAINT fk_station ON fiona.station IS '';
-
 ALTER TABLE fiona.station ADD CONSTRAINT fk_station_2 FOREIGN KEY ( ingest_id ) REFERENCES fiona.ingest( id );
-
-COMMENT ON CONSTRAINT fk_station_2 ON fiona.station IS '';
 
