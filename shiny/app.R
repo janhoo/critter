@@ -12,7 +12,7 @@ library(xtable)
 library(leaflet)
 library(RColorBrewer)
 library(ggplot2)
-library(webshot)
+#library(webshot)
 library(htmlwidgets)
 library(googleVis)
 
