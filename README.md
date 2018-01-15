@@ -1,15 +1,12 @@
-# critter
-<img src="./shiny/www/crabby.png" alt="Critter Logo" width=70/>
+
+<img src="./shiny/www/crabby_banner.png" alt="Critter Logo" width=70/>
 
 This page is a stub!
 #### Overview
 Critter is a warehousing data solution for benthic biodiversity data to
 Based on a elaborated, but still simple enough data model, it is geared towards
 
-<div>
-    <img src="./shiny/www/crabby.png" style="vertical-align: middle;"/>
-    <span style="vertical-align: middle;">Here is some text.</span>
-</div>
+
 
 
 It consists of three modules.
