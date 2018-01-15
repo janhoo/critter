@@ -1,5 +1,5 @@
 
-# <img src="./shiny/www/crabby_banner.png" alt="Critter Logo" witdth=210/>
+# <img src="./shiny/www/crabby_banner.png" alt="Critter Logo" witdth=70/>
 
 This page is a stub!
 #### Overview
