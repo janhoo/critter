@@ -5,7 +5,7 @@ This page is a stub!
 Critter is a warehousing data solution for benthic biodiversity data to
 Based on a elaborated, but still simple enough data model, it is geared towards
 
-![Critter Logo](/shiny/www/crabby.png)
+![Critter Logo](/shiny/www/crabby.png | width=100)
 
 
 It consists of three modules.
