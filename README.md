@@ -7,6 +7,7 @@ Based on a elaborated, but still simple enough data model, it is geared towards
 
 ![Critter Logo](./shiny/www/crabby.png =100x100)
 
+<img src="./shiny/www/crabby.png" alt="Critter Logo" style="width: 100px;"/>
 
 It consists of three modules.
 Centerpiece is the [data model](https://janhoo.github.io/critter/) and the database. The ingest tool helps you
