@@ -1,4 +1,5 @@
-# <img src="./shiny/www/crabby.png" alt="Critter Logo" width=70/> critter
+# critter
+<img src="./shiny/www/crabby.png" alt="Critter Logo" width=70/>
 
 This page is a stub!
 #### Overview
