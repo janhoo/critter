@@ -13,7 +13,7 @@ library(leaflet)
 library(RColorBrewer)
 library(ggplot2)
 #library(webshot)
-library(htmlwidgets)
+#library(htmlwidgets)
 library(googleVis)
 
 # ______________________________________________________
