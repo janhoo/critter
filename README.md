@@ -3,7 +3,11 @@
 
 #
 
-This page is a stub!
+**Poster** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146361.svg)](https://doi.org/10.5281/zenodo.1146361)
+
+**Visualization** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146542.svg)](https://doi.org/10.5281/zenodo.1146542)
+
+**Ingest tool** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146533.svg)](https://doi.org/10.5281/zenodo.1146533)
 
 ## Overview
 Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use.
@@ -27,11 +31,7 @@ if (!require('RcolorBrewer')) install.packages("shiny")
 shiny::runGitHub("critter", "janhoo", subdir = "shiny")
 ```
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146361.svg)](https://doi.org/10.5281/zenodo.1146361) Poster
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146542.svg)](https://doi.org/10.5281/zenodo.1146542) Visualization
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146533.svg)](https://doi.org/10.5281/zenodo.1146533) Ingest
 
 ## Installation
 
@@ -58,6 +58,16 @@ Windows user pls take a look at `./ingesttool/multiplatform/install_dependencies
 
 ## Getting started
 
+- [x] Feeling bad because the 'Getting started' section is a massive void
+- [ ] Provide example data
+- [ ] show how to use the ingest tool to connect to the database
+- [ ] show how to use the ingest tool to produce template .csv files
+- [ ] show how to use the ingest tool to ingest the example data
+- [ ] show how to use the ingest tool to perform basic database operations
+- [ ] show how to use the ingest tool to add root data to look-up-tables
+- [ ] explain some basic assumpions and principles of the data model
+- [ ] show how to connect the visualization to the database
+- [ ] show how to properly cite data retrieved with the visualization tool
 
 
 ## Terms of use
@@ -78,4 +88,4 @@ This work is owned by Jan Holstein and partly by Paul Kloss (ingest tool)
 
 ## HTML Documentation
 
-https://janhoo.github.io/critter/
+[![Inline docs](http://inch-ci.org/github/dwyl/hapi-auth-jwt2.svg?branch=master)](https://janhoo.github.io/critter/)
