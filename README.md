@@ -7,9 +7,8 @@ This page is a stub!
 
 ## Overview
 Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use.
-The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) this poster for rationale and background information.
-
-Based on a elaborated, but still simple enough [data model](https://janhoo.github.io/critter/){:target="_blank"} , the   operational data base is the framework's centerpiece which allows concise and coherent data interrogation and building sustainable services for data, visualization, or story telling of top of it.
+The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) this poster for rationale and background information. 
+Based on a elaborated, but still simple enough [data model](https://janhoo.github.io/critter/) , the operational data base is the framework's centerpiece which allows concise and coherent data interrogation and building sustainable services for data, visualization, or story telling of top of it.
 
 To help researchers with data ingestion and curation, an ingest tool provides a graphical user interface from where standard operations are performed. The visualization and retrieval tool is a  web-based prototype built to showcase visualization techniques and to enable user-driver demand analysis is currently under evaluation in the ESKP-project [RoaStBiW](https://www.researchgate.net/project/RoaStBiW) with several stakeholders. You can check it out on [janhoo.shinyapps.io](https://janhoo.shinyapps.io/arcticcritter/) or use the function `runGitHub()` to run it locally
 
