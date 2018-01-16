@@ -1,7 +1,7 @@
 
 <img src="./shiny/www/crabbybanner.png" alt="Critter Logo" width=210/>
 
-#
+[![Inline docs](http://inch-ci.org/github/dwyl/hapi-auth-jwt2.svg?branch=master)](https://janhoo.github.io/critter/)
 
 
 ## Overview
