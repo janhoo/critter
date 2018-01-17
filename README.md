@@ -60,7 +60,7 @@ shiny::runGitHub("critter", "janhoo", subdir = "shiny")
 * python3 including pyqt5, xlsxwriter, psycopg2, folium
 
 additionally for development
-* R version > 3.4.x
+* R version >= 3.4.x
 * QT5 Designer
 
 1. install postgreSQL 9.x
