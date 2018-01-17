@@ -1,7 +1,7 @@
 
 <img src="./shiny/www/crabbybanner.png" alt="Critter Logo" width=210/>
 
-[![Inline docs](http://inch-ci.org/github/dwyl/hapi-auth-jwt2.svg?branch=master)](https://janhoo.github.io/critter/)
+
 
 
 ## Overview
@@ -30,6 +30,8 @@ The **critter** framework consists of the three modules (i) database, (ii) inges
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146542.svg)](https://doi.org/10.5281/zenodo.1146542)   **Visualization tool**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146533.svg)](https://doi.org/10.5281/zenodo.1146533)    **Ingest tool**
+
+[![Inline docs](http://inch-ci.org/github/dwyl/hapi-auth-jwt2.svg?branch=master)](https://janhoo.github.io/critter/)    **Data model**
 
 Based on an elaborated, but still simple enough [data model](https://janhoo.github.io/critter/) , the operational data base is the framework's centerpiece which allows concise and coherent data interrogation and building sustainable services for data, visualization, or story telling of top of it.
 
