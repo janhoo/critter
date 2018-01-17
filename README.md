@@ -88,7 +88,7 @@ Windows user pls take a look at `./ingesttool/multiplatform/install_dependencies
 - [ ] explain some basic assumptions and principles of the data model
 - [ ] show how to connect the visualization to the database
 - [ ] show how to properly cite data retrieved with the visualization tool
-
+- [ ] point to further reading and the full fledged documentation
 
 ## Contact
 * submit suggestions and bug-reports at: https://github.com/janhoo/benthos/issues
