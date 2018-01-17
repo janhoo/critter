@@ -41,13 +41,13 @@ To help researchers with data ingestion and curation, an ingest tool provides a 
 
 ```
 if (!require('shiny')) install.packages("shiny")
-if (!require('plyr')) install.packages("shiny")
-if (!require('dplyr')) install.packages("shiny")
-if (!require('rlang')) install.packages("shiny")
-if (!require('leaflet')) install.packages("shiny")
+if (!require('plyr')) install.packages("plyr")
+if (!require('dplyr')) install.packages("dplyr")
+if (!require('rlang')) install.packages("rlang")
+if (!require('leaflet')) install.packages("leaflet")
 if (!require('googleVis')) install.packages("googleVis")
-if (!require('xtable')) install.packages("shiny")
-if (!require('RcolorBrewer')) install.packages("shiny")
+if (!require('xtable')) install.packages("xtable")
+if (!require('RcolorBrewer')) install.packages("RcolorBrewer")
 shiny::runGitHub("critter", "janhoo", subdir = "shiny")
 ```
 
