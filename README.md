@@ -20,7 +20,7 @@ Main Goals:
   * Modular architecture
 
 
-  
+
 The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) for rationale and background information.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation**
@@ -76,22 +76,17 @@ Windows user pls take a look at `./ingesttool/multiplatform/install_dependencies
 
 ## Getting started
 
-- [x] Feeling bad because the 'Getting started' section is a massive void
+- [x] Feel embarrassed because this section is a massive void
 - [ ] Provide example data
 - [ ] show how to use the ingest tool to connect to the database
 - [ ] show how to use the ingest tool to produce template .csv files
 - [ ] show how to use the ingest tool to ingest the example data
 - [ ] show how to use the ingest tool to perform basic database operations
 - [ ] show how to use the ingest tool to add root data to look-up-tables
-- [ ] explain some basic assumpions and principles of the data model
+- [ ] explain some basic assumptions and principles of the data model
 - [ ] show how to connect the visualization to the database
 - [ ] show how to properly cite data retrieved with the visualization tool
 
-
-## Terms of use
-This work is owned by Jan Holstein and partly by Paul Kloss (ingest tool)
-* private use is permitted
-* permission required otherwise
 
 ## Contact
 * submit suggestions and bug-reports at: https://github.com/janhoo/benthos/issues
@@ -103,6 +98,10 @@ This work is owned by Jan Holstein and partly by Paul Kloss (ingest tool)
 * Jan Holstein - Data Model, Concept, Architecture & Programming
 * Paul Kloss & Jan Holstein - Ingest Tool
 
+## Terms of use
+This work is owned by Jan Holstein and partly by Paul Kloss (ingest tool)
+* private use is permitted
+* permission required otherwise
 
 ## HTML Documentation
 
