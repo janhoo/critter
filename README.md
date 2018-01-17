@@ -5,8 +5,25 @@
 
 
 ## Overview
-Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use.
+Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use. The idea is to achieve sufficient long-term robustness, openness, accessibility and coherence to permit comprehensive exploitation by modern Web technologies.
+
+Main Goals:
+1. Provide a consistent data model
+  * Enable coherent interrogation of data sets
+  * Achieve reproducibility and reusability of research results
+  * Data accessibility for humans and machines (realizing programmatic machine actionability of cited data)
+2. Provide tools for data ingest and manipulation
+  * Check data plausibility
+  * Enforce data standards
+3. Provide a web-based data exploration and retrieval tool
+  * User driven design
+  * Modular architecture
+
+
+  
 The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) for rationale and background information.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation**
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146361.svg)](https://doi.org/10.5281/zenodo.1146361)   **Poster**
 
