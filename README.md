@@ -5,7 +5,7 @@
 
 
 ## Overview
-Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use. The idea is to achieve sufficient long-term robustness, openness, accessibility and coherence to permit comprehensive exploitation by modern Web technologies.
+Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use. The idea is to achieve sufficient long-term robustness, openness, accessibility and coherence to permit comprehensive exploitation by both modern Web technologies and ongoing "classical" research.
 
 Main Goals:
 1. Provide a consistent data model
