@@ -14,12 +14,12 @@ If you want to interrogate all your available data or subset thereof with questi
 * *What's the difference in median abundance of family Y between grab and trawl sampling methods in summer in area Z?*
 * *How many samples are taken on a winter expedition with vessel B per day?*
 
-And you want to do it with only one or few lines of code, <br>
-and want to wait only a few seconds for a comprehensive answer, <br>
-and want to get the same answer every time you ask the same question on the same data, :wink: <br>
-and want to get an immediate updated answer once new data come in?
+You can do it with only one or few lines of code. <br>
+You only have to wait a few seconds for a comprehensive answer. <br>
+You will get the same answer every time you ask the same question on the same data. :wink: <br>
+You will, however, get an immediate updated answer once new data come in.
 
-__Then you should consider moving away from spreadsheed data management and embrace new solutions like this__
+__You should consider moving away from spreadsheet data management and embrace new solutions like this__
 
 
 
@@ -37,7 +37,7 @@ __Then you should consider moving away from spreadsheed data management and embr
   * Modular architecture
 
 
-## Framework
+## Framework Overview
 The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) for rationale and background information.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation** (not a video, just the slides)
