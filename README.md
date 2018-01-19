@@ -9,10 +9,13 @@ Critter is a comprehensive data management solution to essentially replace the p
 
 
 If you want to interrogate all your available data or subset thereof with questions like this:
-> What is the average benthic biomass where species A lives? \s\s
-> What is the variance in species richness in communities with and without the presence of genus X \s\s
-What is the difference in median abundance of family Y between grab and trawl sampling methods in summer in Area Z?\s\s
-How many samples are taken on a winter expedition with vessel B per day?\s\s
+> What is the average benthic biomass where species A lives?
+
+> What is the variance in species richness in communities with and without the presence of genus X
+
+> What is the difference in median abundance of family Y between grab and trawl sampling methods in summer in Area Z?
+
+> How many samples are taken on a winter expedition with vessel B per day?
 
 and do it with only one or few lines of code,
 and want to wait only a few seconds for a comprehensive answer,
