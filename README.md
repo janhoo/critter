@@ -8,11 +8,11 @@
 Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use. The idea is to achieve sufficient long-term robustness, openness, accessibility and coherence to permit comprehensive exploitation by both modern Web technologies and ongoing "classical" research.
 
 
-If you want to interrogate all your available data or subset thereof with questions like: <br>
-*What is the average benthic biomass where species A lives? <br>
-What is the variance in species richness in communities with and without the presence of genus X <br>
-What's the difference in median abundance of family Y between grab and trawl sampling methods in summer in Area Z? <br>
-How many samples are taken on a winter expedition with vessel B per day?*
+If you want to interrogate all your available data or subset thereof with questions like:
+* *What's the average benthic biomass where species A lives?*
+* *What's the variance in species richness in communities with and without the presence of genus X*
+* *What's the difference in median abundance of family Y between grab and trawl sampling methods in summer in area Z?*
+* *How many samples are taken on a winter expedition with vessel B per day?*
 
 And you want to do it with only one or few lines of code, <br>
 and want to wait only a few seconds for a comprehensive answer, <br>
