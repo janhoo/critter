@@ -9,14 +9,14 @@ Critter is a comprehensive data management solution to essentially replace the p
 
 
 If you want to interrogate all your available data or subset thereof with questions like this:
-> What is the average benthic biomass where species A lives?
+> What is the average benthic biomass where species A lives? <br>
 What is the variance in species richness in communities with and without the presence of genus X <br>
-What is the difference in median abundance of family Y between grab and trawl sampling methods in summer in Area Z?
+What is the difference in median abundance of family Y between grab and trawl sampling methods in summer in Area Z? <br>
 How many samples are taken on a winter expedition with vessel B per day?
 
-and do it with only one or few lines of code,
-and want to wait only a few seconds for a comprehensive answer,
-and want to get the same answer every time you ask the same question on the same data,
+and do it with only one or few lines of code, <br>
+and want to wait only a few seconds for a comprehensive answer, <br>
+and want to get the same answer every time you ask the same question on the same data, <br>
 and want to get an immediate updated answer once new data come in,
 
 
@@ -37,7 +37,7 @@ Main Goals:
 
 The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) for rationale and background information.
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation**
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation** (soory no video, just the slides)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1146361.svg)](https://doi.org/10.5281/zenodo.1146361)   **Poster**
 
