@@ -4,10 +4,10 @@
 
 
 
-## Overview
+
 Critter is a comprehensive data management solution to essentially replace the previous system of spreadsheets and repositories in ubiquitous use. The idea is to achieve sufficient long-term robustness, openness, accessibility and coherence to permit comprehensive exploitation by both modern Web technologies and ongoing "classical" research.
 
-
+## Overview
 If you want to interrogate all your available data or subset thereof with questions like:
 * *What's the average benthic biomass where species A lives?*
 * *What's the variance in species richness in communities with and without the presence of genus X*
@@ -23,7 +23,7 @@ __Then you should consider moving away from spreasheed data management and embra
 
 
 
-Main Goals:
+## Main Goals:
 1. Provide a consistent data model
   * Enable coherent interrogation of data sets
   * Achieve reproducibility and reusability of research results
@@ -36,7 +36,7 @@ Main Goals:
   * Modular architecture
 
 
-
+## Framework
 The **critter** framework consists of the three modules (i) database, (ii) ingest and curation tool, and (iii) visualization and retrieval tool. Take a look at [this poster](https://zenodo.org/record/1146361/files/critter_poster_arcticchange2017_holstein.pdf) for rationale and background information.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1153984.svg)](https://doi.org/10.5281/zenodo.1153984)  **Conference Presentation** (not a video, just the slides)
