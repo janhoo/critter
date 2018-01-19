@@ -12,7 +12,7 @@ If you want to interrogate all your available data or subset thereof with questi
 * *What's the average benthic biomass where species A lives?*
 * *What's the variance in species richness in communities with and without the presence of genus X*
 * *What's the difference in median abundance of family Y between grab and trawl sampling methods in summer in area Z?*
-* *How many samples are taken on a winter expedition with vessel B per day?*
+* *How many samples are taken on a winter expedition with vessel B per day on average?*
 
 You can do it with only one or few lines of code. <br>
 You only have to wait a few seconds for a comprehensive answer. <br>
